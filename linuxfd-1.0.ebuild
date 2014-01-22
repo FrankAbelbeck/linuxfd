@@ -3,12 +3,12 @@
 # $Header: $
 
 EAPI=5
-PYTHON_COMPAT=( python{3_3} )
+PYTHON_COMPAT=( python3_3 )
 
 inherit distutils-r1 linux-info
 
 DESCRIPTION="Python bindings for the Linux eventfd/signalfd/timerfd syscalls"
-HOMEPAGE="http://abelbeck.wordpress.com/ https://www.github.com/abelbeck/linuxfd"
+HOMEPAGE="https://pypi.python.org/pypi/linuxfd/1.0 https://www.github.com/abelbeck/linuxfd"
 SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
 
 LICENSE="LGPL"
