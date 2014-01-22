@@ -1,0 +1,33 @@
+--------------------------------------------------------------------------------
+linuxfd: Python interface for the Linux system calls eventfd/signalfd/timerfd
+--------------------------------------------------------------------------------
+
+Author: Copyright (C) 2014 Frank Abelbeck <frank.abelbeck@googlemail.com>
+
+Version: 1.0
+
+Licence: LGPL
+
+Platform: Linux (kernel version >= 2.6.27); requires activated kernel options
+CONFIG_TIMERFD, CONFIG_SIGNALFD and CONFIG_EVENTFD as well as a recent version
+of the GNU C Library.
+
+--------------------------------------------------------------------------------
+
+Description: todo...
+
+--------------------------------------------------------------------------------
+
+Installation: An ebuild for Gentoo Linux is provided with this package. On any
+other Linux system this package might be installed using the usual distutils way:
+
+    python setup.py install
+
+--------------------------------------------------------------------------------
+
+Usage: After installation a well documented new python module named "linuxfd"
+is available.
+
+--------------------------------------------------------------------------------
+
+Changelog: (empty)
