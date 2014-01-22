@@ -93,7 +93,7 @@ EAGAIN if set to non-blocking behaviour."""
 No value is returned."""
 		try:
 			# convert value to an integer and clip it to uint64
-			initval = min(max(int(initval),0),0xfffffffffffffffe)
+			value = min(max(int(value),0),0xfffffffffffffffe)
 		except:
 			# something went wrong: raise EINVAL (like providing wrong flags)
 			raise OSError(errno.EINVAL,os.strerror(errno.EINVAL))
@@ -203,7 +203,7 @@ The returned dictionaries have the following structure according to signalfd(2):
 If multiple signals got caught, multiple calls to read are necessary until all
 pending signals are consumed. When there are no signals pending, this method
 either blocks or fails with error EAGAIN if in non-blocking mode."""
-		return signalfd_c.read(self.fd)
+		return signalfd_c.signalfd_read(self.fd)
 
 	def signals(self):
 		"""Return the set of guarded signal numbers."""
