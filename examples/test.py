@@ -1,4 +1,20 @@
 #!/usr/bin/env python
+"""This file is part of linuxfd (Python wrapper for eventfd/signalfd/timerfd)
+Copyright (C) 2014 Frank Abelbeck <frank.abelbeck@googlemail.com>
+
+linuxfd is free software: you can redistribute it and/or modify it under the
+terms of the GNU Lesser General Public License as published by the
+Free Software Foundation, either version 3 of the License, or (at your option)
+any later version.
+
+linuxfd is distributed in the hope that it will be useful, but WITHOUT ANY
+WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+PARTICULAR PURPOSE.  See the GNU Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public License
+along with linuxfd.  If not, see <http://www.gnu.org/licenses/>.
+
+Written in Python V3."""
 
 import linuxfd,signal,select,time
 
@@ -19,6 +35,7 @@ epl.register(tfd.fileno(),select.EPOLLIN)
 
 # start main loop
 isrunning=True
+print("{0:.3f}: Hello!".format(time.time()))
 while isrunning:
 	# block until epoll detects changes in the registered files
 	events = epl.poll(-1)
@@ -27,16 +44,17 @@ while isrunning:
 	for fd,event in events:
 		if fd == efd.fileno() and event & select.EPOLLIN:
 			# event file descriptor readable: read and exit loop
-			print("\n[{0:.3f}] event file received update, exiting...".format(t),end="")
+			print("{0:.3f}: event file received update, exiting...".format(t))
 			efd.read()
 			isrunning = False
 		elif fd == sfd.fileno() and event & select.EPOLLIN:
 			# signal file descriptor readable: write to event file
 			siginfo = sfd.read()
 			if siginfo["signo"] == signal.SIGINT:
-				print("\n[{0:.3f}] SIGINT received, notifying event file".format(t),end="")
+				print("{0:.3f}: SIGINT received, notifying event file".format(t))
 				efd.write(1)
 		elif fd == tfd.fileno() and event & select.EPOLLIN:
 			# timer file descriptor readable: display that timer has expired
-			print("\n[{0:.3f}] timer expired".format(t),end="")
+			print("{0:.3f}: timer has expired".format(t))
 			tfd.read()
+print("{0:.3f}: Goodbye!".format(time.time()))
