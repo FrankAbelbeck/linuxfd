@@ -31,7 +31,9 @@ static PyObject * _eventfd(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "Ii", &initval, &flags)) return NULL;
 	
 	/* call eventfd; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = eventfd(initval, flags);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* everything's fine, return file descriptor returned by eventfd() */
@@ -51,7 +53,9 @@ static PyObject * _eventfd_read(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
 	/* call eventfd_read; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = eventfd_read(fd, &value);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* everything's fine, return read value */
@@ -72,7 +76,9 @@ static PyObject * _eventfd_write(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "iK", &fd, &value)) return NULL;
 	
 	/* call eventfd_write; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = eventfd_write(fd,value);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* everything's fine, return None value */

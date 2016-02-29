@@ -48,7 +48,9 @@ static PyObject * _signalfd(PyObject *self, PyObject *args) {
 	}
 	
 	/* call signalfd; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = signalfd(fd, &mask, flags);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* everything's fine, return file descriptor returned by signalfd() */
@@ -69,7 +71,9 @@ static PyObject * _signalfd_read(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
 	/* call read; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = read(fd, &value, sizeof(struct signalfd_siginfo));
+	Py_END_ALLOW_THREADS
 	if (result == -1)
 		/* read failed, raise OSError with current error number */
 		return PyErr_SetFromErrno(PyExc_OSError);
