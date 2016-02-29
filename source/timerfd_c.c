@@ -89,7 +89,6 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd;
-	int flags;
 	int result;
 	float value;
 	float interval;
@@ -121,7 +120,6 @@ static PyObject * _timerfd_read(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd;
 	uint64_t buffer;
-	size_t count;
 	ssize_t result;
 	
 	/* parse the function's arguments: int fd */
