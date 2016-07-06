@@ -34,7 +34,9 @@ static PyObject * _timerfd_create(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "ii", &clockid, &flags)) return NULL;
 	
 	/* call timerfd_create; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_create(clockid, flags);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* everything's fine, return file descriptor returned by timerfd_create() */
@@ -67,7 +69,9 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	new_value.it_interval.tv_nsec = (long int)( 1e9 * (interval - (int)interval) );
 	
 	/* call timerfd_settime; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_settime(fd, flags, &new_value, &old_value);
+	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* convert returned struct old_value */
@@ -85,7 +89,6 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd;
-	int flags;
 	int result;
 	float value;
 	float interval;
@@ -96,7 +99,9 @@ static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
 	/* call timerfd_gettime; catch errors by raising an exception */
+	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_gettime(fd, &curr_value);
+	Py_END_ALLOW_THREADS
 	if(result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* convert returned struct old_value */
@@ -115,14 +120,15 @@ static PyObject * _timerfd_read(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd;
 	uint64_t buffer;
-	size_t count;
 	ssize_t result;
 	
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
 	/* call read; catch OSErrors */
+	Py_BEGIN_ALLOW_THREADS
 	result = read(fd, &buffer, sizeof(uint64_t));
+	Py_END_ALLOW_THREADS
 	if (result == -1)
 		/* read failed, raise OSError with current error number */
 		return PyErr_SetFromErrno(PyExc_OSError);
