@@ -26,5 +26,7 @@ is available.
 
 --------------------------------------------------------------------------------
 
-Changelog: (empty)
+Changelog
+
+2016-07-06: merged changes proposed by palaviv (make linuxfd thread-safe)
 
