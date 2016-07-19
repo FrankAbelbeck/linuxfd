@@ -1,5 +1,5 @@
 /* This file is part of linuxfd (Python wrapper for eventfd/signalfd/timerfd)
-Copyright (C) 2014 Frank Abelbeck <frank.abelbeck@googlemail.com>
+Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
     linuxfd is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
