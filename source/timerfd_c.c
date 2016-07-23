@@ -59,7 +59,7 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	PyObject *resulttuple;
 	
 	/* parse the function's arguments: int fd, int flags, double value, double interval */
-	if (!PyArg_ParseTuple(args, "iiff", &fd, &flags, &value, &interval)) return NULL;
+	if (!PyArg_ParseTuple(args, "iidd", &fd, &flags, &value, &interval)) return NULL;
 	
 	/* prepare struct itimerspec */
 	new_value.it_value.tv_sec  = (time_t)value;
@@ -77,7 +77,7 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	/* convert returned struct old_value */
 	value    = (double)old_value.it_value.tv_sec    + (double)old_value.it_value.tv_nsec / 1e9;
 	interval = (double)old_value.it_interval.tv_sec + (double)old_value.it_interval.tv_nsec / 1e9;
-	resulttuple = Py_BuildValue("(ff)", value, interval);
+	resulttuple = Py_BuildValue("(dd)", value, interval);
 	
 	/* everything's fine, return tuple (value,interval) created from old_value */
 	return resulttuple;
