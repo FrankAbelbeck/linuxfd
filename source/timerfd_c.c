@@ -52,13 +52,13 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	int fd;
 	int flags;
 	int result;
-	float value;
-	float interval;
+	double value;
+	double interval;
 	struct itimerspec old_value;
 	struct itimerspec new_value;
 	PyObject *resulttuple;
 	
-	/* parse the function's arguments: int clockid, int flags */
+	/* parse the function's arguments: int fd, int flags, double value, double interval */
 	if (!PyArg_ParseTuple(args, "iiff", &fd, &flags, &value, &interval)) return NULL;
 	
 	/* prepare struct itimerspec */
@@ -75,8 +75,8 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* convert returned struct old_value */
-	value    = (float)old_value.it_value.tv_sec    + (float)old_value.it_value.tv_nsec / 1e9;
-	interval = (float)old_value.it_interval.tv_sec + (float)old_value.it_interval.tv_nsec / 1e9;
+	value    = (double)old_value.it_value.tv_sec    + (double)old_value.it_value.tv_nsec / 1e9;
+	interval = (double)old_value.it_interval.tv_sec + (double)old_value.it_interval.tv_nsec / 1e9;
 	resulttuple = Py_BuildValue("(ff)", value, interval);
 	
 	/* everything's fine, return tuple (value,interval) created from old_value */
@@ -90,12 +90,12 @@ static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd;
 	int result;
-	float value;
-	float interval;
+	double value;
+	double interval;
 	struct itimerspec curr_value;
 	PyObject *resulttuple;
 	
-	/* parse the function's arguments: int clockid, int flags */
+	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
 	/* call timerfd_gettime; catch errors by raising an exception */
@@ -105,9 +105,9 @@ static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	if(result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
 	/* convert returned struct old_value */
-	value    = (float)curr_value.it_value.tv_sec    + (float)curr_value.it_value.tv_nsec / 1e9;
-	interval = (float)curr_value.it_interval.tv_sec + (float)curr_value.it_interval.tv_nsec / 1e9;
-	resulttuple = Py_BuildValue("(ff)", value, interval);
+	value    = (double)curr_value.it_value.tv_sec    + (double)curr_value.it_value.tv_nsec / 1e9;
+	interval = (double)curr_value.it_interval.tv_sec + (double)curr_value.it_interval.tv_nsec / 1e9;
+	resulttuple = Py_BuildValue("(dd)", value, interval);
 	
 	/* everything's fine, return tuple (value,interval) created from old_value */
 	return resulttuple;

@@ -26,7 +26,7 @@ longdescription = """linuxfd provides a Python interface for the Linux system ca
 
 setup(
 	name = "linuxfd",
-	version = "1.1",
+	version = "1.2",
 	description = "Python bindings for the Linux eventfd/signalfd/timerfd syscalls",
 	long_description = longdescription,
 	author = "Frank Abelbeck",
