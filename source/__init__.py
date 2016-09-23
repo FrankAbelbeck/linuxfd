@@ -26,6 +26,35 @@ import linuxfd.inotify_c
 import errno,os
 
 
+# define constants
+# inotify event mask constants (inotify.add(), inotify.read())
+IN_ACCESS = inotify_c.IN_ACCESS
+IN_ATTRIB = inotify_c.IN_ATTRIB
+IN_CLOSE_WRITE = inotify_c.IN_CLOSE_WRITE
+IN_CLOSE_NOWRITE = inotify_c.IN_CLOSE_NOWRITE
+IN_CREATE = inotify_c.IN_CREATE
+IN_DELETE = inotify_c.IN_DELETE
+IN_DELETE_SELF = inotify_c.IN_DELETE_SELF
+IN_MODIFY = inotify_c.IN_MODIFY
+IN_MOVE_SELF = inotify_c.IN_MOVE_SELF
+IN_MOVED_FROM = inotify_c.IN_MOVED_FROM
+IN_MOVED_TO = inotify_c.IN_MOVED_TO
+IN_OPEN = inotify_c.IN_OPEN
+IN_ALL_EVENTS = inotify_c.IN_ALL_EVENTS
+IN_MOVE = inotify_c.IN_MOVE
+IN_CLOSE = inotify_c.IN_CLOSE
+# additional inotify event mask constants for inotify.add()
+IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW
+IN_EXCL_UNLINK = inotify_c.IN_EXCL_UNLINK
+IN_ONESHOT = inotify_c.IN_ONESHOT
+IN_ONLYDIR = inotify_c.IN_ONLYDIR
+# additional inotify event mask constants for inotify.read()
+IN_IGNORED = inotify_c.IN_IGNORED
+IN_ISDIR = inotify_c.IN_ISDIR
+IN_Q_OVERFLOW = inotify_c.IN_Q_OVERFLOW
+IN_UNMOUNT = inotify_c.IN_UNMOUNT
+
+
 class eventfd:
 	"""Class to manage a file descriptor for event notification.
 
@@ -518,8 +547,48 @@ Returns:
 		return self._fd
 	
 	
-	def add(self,pathname,mask):
-		"""
+	def add(self,pathname,mask=IN_ALL_EVENTS,replace=True):
+		"""Add another file or directory to this inotify instance in order to monitor it.
+
+The type of event to look for is described by OR-ing the following constants:
+   linuxfd.IN_ACCESS: file was accessed, for example by read().
+   linuxfd.IN_ATTRIB: metadata changed (e.g. permissions, extended attributes,
+                      link count and user/group ID.
+   linuxfd.IN_CLOSE_WRITE: a file opened for writing was closed.
+   linuxfd.IN_CLOSE_NOWRITE: a file/directory not opened for writing was closed.
+   linuxfd.IN_CREATE: a file/directory was created in watched directory.
+   linuxfd.IN_DELETE: a file/directory was deleted from watched directory.
+   linuxfd.IN_DELETE_SELF: watched file/directory was deleted. Moving files can
+                           cause this event, too (copy+delete); afterwards
+                           inotify will generate IN_IGNORED events.
+   linuxfd.IN_MODIFY: file was modified, for example by write().
+   linuxfd.IN_MOVE_SELF: watched file/directory was moved.
+   linuxfd.IN_MOVED_FROM: generated for a directory containing the old filename
+                          when a file is renamed.
+   linuxfd.IN_MOVED_TO: generated for a directory containing the new filename
+                        when a file is renamed.
+   linuxfd.IN_OPEN: a file/directory was opened.
+   linuxfd.IN_ALL_EVENTS = all of the above OR-ed together.
+   linuxfd.IN_MOVE = linuxfd.IN_MOVED_FROM | linuxfd.IN_MOVED_TO.
+   linuxfd.IN_CLOSE = linuxfd.IN_CLOSE_WRITE | linuxfd.IN_CLOSE_NOWRITE
+
+In addition, the following flags can be set to tune the behaviour of this
+inotify instance for this file:
+   linuxfd.IN_DONT_FOLLOW: do not dereference pathname if it is a symbolic link.
+   linuxfd.IN_EXCL_UNLINK: events are not generated for children after they have
+                           been unlinked from the watched directory.
+   linuxfd.IN_ONESHOT: only monitor a file/directory for one event, then remove
+                       it from the watch list.
+   linuxfd.IN_ONLYDIR: only watch pathname if it is a directory.
+
+Args:
+   pathname: a string.
+   mask: an integer, a bitmask describing file alternation events; defaults to
+         IN_ALL_EVENTS, i.e. watch for all file events.
+   replace: a boolean; if it is True (=default) and a watch instance alrady
+            exists for the given file, replace its mask; otherwise add the
+            specified events to the existing mask (by OR-ing them).
+
 Raises:
    OSError.EACCES: read access to given file is not permitted.
    OSError.EBADF: inotify file descriptor already closed.
@@ -531,6 +600,10 @@ Raises:
    OSError.ENOMEM: insufficient kernel memory available.
    OSError.ENOSPC: user limit on total number of inotify watches was reached or
                    the kernel failed to allocate a needed resource."""
+		if bool(replace):
+			mask = mask & inotify_c.IN_MASK_ADD # make sure MASK_ADD is not set
+		else:
+			mask = mask | inotify_c.IN_MASK_ADD # make sure MASK_ADD is set
 		self._wd[pathname] = inotify_c.inotify_add_watch(self._fd,pathname,mask)
 	
 	
@@ -543,14 +616,39 @@ Raises:
 		del self._wd[pathname]
 	
 	
-	def read(self):
-		eventlist = inotify_c.inotify_read(self._fd)
+	def read(self,buffersize=32):
+		"""Read the inotify file and return a tuple of events.
+
+If there are no inotify events, this method will either block or fail with error
+EAGAIN if in non-blocking mode.
+
+Args:
+   buffersize: an integer, defining the maximum read buffer size; unit: size of
+               struct inotify_event (=16 bytes); a size of 16 (default value)
+               will allocate 512 bytes of buffer space.
+
+Returns:
+   A tuple of 4-tuples (pathname,name,mask,cookie):
+    - "pathname" is the name string previously registered using add();
+    - if "pathname" is a directory, the string "name" refers to a file below
+      "pathname"; empty string otherwise;
+    - "mask" is an integer bitmask describing the occurred events;
+    - "cookie" is a unique integer connecting related events; this applies only
+      for the events IN_MOVED_FROM and IN_MOVED_TO, so that the calling
+      application can group these events; in any other case "cookie" is zero.
+
+Raises:
+   OSError.EAGAIN: no inotify events occurred.
+   OSError.EBADF: inotify file descriptor already closed.
+   OSError.EINVAL: buffer size too small.
+   OSError.ENOMEM: insufficient memory for buffer allocation."""
+		eventlist = inotify_c.inotify_read(self._fd,size)
 		result = list()
 		for wd,mask,cookie,name in eventlist:
 			# reverse look-up watch descriptor
 			pathname = [key for key,value in self._wd.items() if value == wd][0]
-			result.append(pathname,name,mask,cookie)
-		return result
+			result.append((pathname,name,mask,cookie))
+		return tuple(result)
 	
 	
 	def watchedPaths(self):

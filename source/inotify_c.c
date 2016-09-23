@@ -89,9 +89,12 @@ static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
    C:      ssize_t read(int fd, void *buf, size_t count); */
 static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	/* variable definitions */
-	int fd,size,n_events;
+	int fd,size,buffersize,n_events;
 	ssize_t result;
 	char *pointer;
+	const struct inotify_event *event;
+	void *buffer;
+	PyObject *result;
 	
 	/* parse the function's argument: int fd */
 	if (!PyArg_ParseTuple(args, "ii", &fd, &size)) return NULL;
@@ -102,12 +105,18 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	    aligned. On other systems, incorrect alignment may decrease performance.
 	    Hence, the buffer used for reading from the inotify file descriptor
 	    should have the same alignment as struct inotify_event. */
-	char buffer[size] __attribute__ ((aligned(__alignof__(struct inotify_event))));
-	const struct inotify_event *event;
+	/* char buffer[size] __attribute__ ((aligned(__alignof__(struct inotify_event)))); */
+	/* since this won't work in C, aligned_alloc() has to be used */
+	buffersize = size*sizeof(struct inotify_event);
+	buffer = aligned_alloc(alignof(struct inotify_event),buffersize);
+	if (buffer == NULL) {
+		/* read failed, raise OSError with either EINVAL (alignment not a power of two) or ENOMEM (insufficient memory) */
+		return PyErr_SetFromErrno(PyExc_OSError);
+	}
 	
 	/* call read; catch OSErrors */
 	Py_BEGIN_ALLOW_THREADS
-	length = read(fd, buffer, sizeof(buffer));
+	length = read(fd, buffer, buffersize);
 	Py_END_ALLOW_THREADS
 	
 	if (length == -1) {
@@ -123,7 +132,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 		n_events++;
 	}
 	/* second run: correctly size result list and populate it with the events via PyList_SetItem */
-	PyObject *result = PyList_New(n_events);
+	result = PyList_New(n_events);
 	n_events = 0;
 	for (pointer = buffer; pointer < buffer + length; pointer += sizeof(struct inotify_event) + event->len) {
 		/* cast current pointer to an inotify_event structure */
