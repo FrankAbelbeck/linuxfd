@@ -21,7 +21,7 @@ inherit distutils-r1 linux-info
 
 DESCRIPTION="Python bindings for the Linux eventfd/signalfd/timerfd/inotify syscalls"
 HOMEPAGE="https://pypi.python.org/pypi/linuxfd/1.4 https://www.github.com/abelbeck/linuxfd"
-SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.gz"
+SRC_URI="mirror://pypi/${PN:0:1}/${PN}/${P}.tar.bz2"
 
 LICENSE="LGPL"
 SLOT="0"
