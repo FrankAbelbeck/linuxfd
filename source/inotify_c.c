@@ -22,14 +22,14 @@ Copyright (C) 2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 #include <sys/inotify.h>
 
 
-/* Python: inotify_init1(flags) -> fd
+/* Python: inotify_init(flags) -> fd
    C:      int inotify_init1(int flags); */
-static PyObject * _inotify_init1(PyObject *self, PyObject *args) {
+static PyObject * _inotify_init(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd,flags;
 	
 	/* parse argument: integer -> flags */
-	if (!PyArg_ParseTuple(args, "i", &flags) return NULL;
+	if (!PyArg_ParseTuple(args, "i", &flags)) return NULL;
 	
 	/* call inotify_init1; catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
@@ -47,7 +47,7 @@ static PyObject * _inotify_init1(PyObject *self, PyObject *args) {
 static PyObject * _inotify_add_watch(PyObject *self, PyObject *args) {
 	/* variable definitions */
 	int fd,wd;
-	const char *pathname;
+	char *pathname;
 	uint32_t mask;
 	
 	/* parse the function's arguments: int fd */
@@ -55,7 +55,7 @@ static PyObject * _inotify_add_watch(PyObject *self, PyObject *args) {
 	
 	/* call inotify_add_watch; catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
-	wd = inotify_add_watch(fd, &pathname, mask);
+	wd = inotify_add_watch(fd, pathname, mask);
 	Py_END_ALLOW_THREADS
 	if (wd == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
@@ -68,14 +68,14 @@ static PyObject * _inotify_add_watch(PyObject *self, PyObject *args) {
    C:      int inotify_rm_watch(int fd, int wd); */
 static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
 	/* variable definitions */
-	int fd,wd;
+	int fd,wd,result;
 	
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "ii", &fd, &wd)) return NULL;
 	
 	/* call inotify_rm_watch; catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
-	result = inotify_add_watch(fd, wd);
+	result = inotify_rm_watch(fd, wd);
 	Py_END_ALLOW_THREADS
 	if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
@@ -89,11 +89,10 @@ static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
    C:      ssize_t read(int fd, void *buf, size_t count); */
 static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	/* variable definitions */
-	int fd,size,buffersize,n_events;
-	ssize_t result;
+	int fd,size,buffersize,length,n_events;
 	char *pointer;
 	const struct inotify_event *event;
-	void *buffer;
+	char *buffer;
 	PyObject *result;
 	
 	/* parse the function's argument: int fd */
@@ -108,7 +107,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	/* char buffer[size] __attribute__ ((aligned(__alignof__(struct inotify_event)))); */
 	/* since this won't work in C, aligned_alloc() has to be used */
 	buffersize = size*sizeof(struct inotify_event);
-	buffer = aligned_alloc(alignof(struct inotify_event),buffersize);
+	buffer = (char *)aligned_alloc(__alignof__(struct inotify_event),buffersize);
 	if (buffer == NULL) {
 		/* read failed, raise OSError with either EINVAL (alignment not a power of two) or ENOMEM (insufficient memory) */
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -121,6 +120,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	
 	if (length == -1) {
 		/* read failed, raise OSError with current error number */
+		free(buffer); /* thou shalt always free allocated memory! */
 		return PyErr_SetFromErrno(PyExc_OSError);
 	}
 	
@@ -144,12 +144,13 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 		);
 		n_events++;
 	}
+	free(buffer); /* thou shalt always free allocated memory! */
 	return result;
 }
 
 
 static PyMethodDef methods[] = {
-	{ "inotify_init1",     _inotify_init1,     METH_VARARGS, NULL },
+	{ "inotify_init",      _inotify_init,      METH_VARARGS, NULL },
 	{ "inotify_add_watch", _inotify_add_watch, METH_VARARGS, NULL },
 	{ "inotify_rm_watch",  _inotify_rm_watch,  METH_VARARGS, NULL },
 	{ "inotify_read",      _inotify_read,      METH_VARARGS, NULL },

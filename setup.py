@@ -20,14 +20,15 @@ from distutils.core import setup, Extension
 eventfd_c  = Extension("eventfd_c",  sources = ["source/eventfd_c.c"])
 signalfd_c = Extension("signalfd_c", sources = ["source/signalfd_c.c"])
 timerfd_c  = Extension("timerfd_c",  sources = ["source/timerfd_c.c"])
+inotify_c  = Extension("inotify_c",  sources = ["source/inotify_c.c"])
 
 longdescription = """linuxfd provides a Python interface for the Linux system calls 'eventfd',
-'signalfd' and 'timerfd'."""
+'signalfd', 'timerfd' and 'inotify'."""
 
 setup(
 	name = "linuxfd",
-	version = "1.3",
-	description = "Python bindings for the Linux eventfd/signalfd/timerfd syscalls",
+	version = "1.4",
+	description = "Python bindings for the Linux eventfd/signalfd/timerfd/inotify syscalls",
 	long_description = longdescription,
 	author = "Frank Abelbeck",
 	author_email = "frank.abelbeck@googlemail.com",
@@ -37,5 +38,5 @@ setup(
 	package_dir = {"linuxfd":"source"},
 	packages = ["linuxfd"],
 	ext_package = "linuxfd",
-	ext_modules = [eventfd_c,signalfd_c,timerfd_c]
+	ext_modules = [eventfd_c,signalfd_c,timerfd_c,inotify_c]
 )

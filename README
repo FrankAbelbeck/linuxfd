@@ -4,13 +4,13 @@ linuxfd: Python interface for the Linux system calls eventfd/signalfd/timerfd
 
 Author: Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
-Version: 1.3
+Version: 1.4
 
 Licence: LGPL
 
 Platform: Linux (kernel version >= 2.6.27); requires activated kernel options
-CONFIG_TIMERFD, CONFIG_SIGNALFD and CONFIG_EVENTFD as well as a recent version
-of the GNU C Library.
+CONFIG_TIMERFD, CONFIG_SIGNALFD, CONFIG_EVENTFD and CONFIG_INOTIFY_USER as well
+as a recent version of the GNU C Library.
 
 --------------------------------------------------------------------------------
 
@@ -31,3 +31,4 @@ Changelog
 2016-07-06: merged changes proposed by palaviv (make linuxfd thread-safe)
 2016-07-23: fixed float <-> timespec conversion issues; v1.2 suffered from a
             type but pypi would not let me replace the source tar ball
+2016-09-25: added inotify support
