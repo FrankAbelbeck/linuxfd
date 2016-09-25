@@ -525,7 +525,7 @@ Raises:
 		flags = 0
 		if self._isNonBlocking: flags |= inotify_c.IN_NONBLOCK
 		if self._isCloseOnExec: flags |= inotify_c.IN_CLOEXEC
-		self._fd = inotify_c.inotify_init1(flags)
+		self._fd = inotify_c.inotify_init(flags)
 	
 	
 	def __del__(self):
