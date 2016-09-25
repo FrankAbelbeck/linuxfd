@@ -15,7 +15,7 @@
 #    along with linuxfd.  If not, see <http://www.gnu.org/licenses/>.
 
 EAPI=5
-PYTHON_COMPAT=( python3 )
+PYTHON_COMPAT=( python{3_3,3_4} )
 
 inherit distutils-r1 linux-info
 
