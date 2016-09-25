@@ -600,12 +600,10 @@ Raises:
    OSError.ENOMEM: insufficient kernel memory available.
    OSError.ENOSPC: user limit on total number of inotify watches was reached or
                    the kernel failed to allocate a needed resource."""
-		print(mask)
 		if bool(replace):
 			mask = mask & ~inotify_c.IN_MASK_ADD # make sure MASK_ADD is not set
 		else:
 			mask = mask | inotify_c.IN_MASK_ADD # make sure MASK_ADD is set
-		print(mask,IN_ALL_EVENTS)
 		self._wd[pathname] = inotify_c.inotify_add_watch(self._fd,pathname,mask)
 	
 	
