@@ -89,7 +89,7 @@ static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
    C:      ssize_t read(int fd, void *buf, size_t count); */
 static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	/* variable definitions */
-	int fd,size,buffersize,length,n_events;
+	int fd,size,length,n_events;
 	char *pointer;
 	const struct inotify_event *event;
 	char *buffer;
@@ -106,8 +106,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	    should have the same alignment as struct inotify_event. */
 	/* char buffer[size] __attribute__ ((aligned(__alignof__(struct inotify_event)))); */
 	/* since this won't work in C, aligned_alloc() has to be used */
-	buffersize = size*sizeof(struct inotify_event);
-	buffer = (char *)aligned_alloc(__alignof__(struct inotify_event),buffersize);
+	buffer = (char *)aligned_alloc(__alignof__(struct inotify_event),size);
 	if (buffer == NULL) {
 		/* read failed, raise OSError with either EINVAL (alignment not a power of two) or ENOMEM (insufficient memory) */
 		return PyErr_SetFromErrno(PyExc_OSError);
@@ -115,7 +114,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	
 	/* call read; catch OSErrors */
 	Py_BEGIN_ALLOW_THREADS
-	length = read(fd, buffer, buffersize);
+	length = read(fd, buffer, size);
 	Py_END_ALLOW_THREADS
 	
 	if (length == -1) {

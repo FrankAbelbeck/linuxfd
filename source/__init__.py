@@ -616,16 +616,15 @@ Raises:
 		del self._wd[pathname]
 	
 	
-	def read(self,buffersize=32):
+	def read(self,buffersize=1024):
 		"""Read the inotify file and return a tuple of events.
 
 If there are no inotify events, this method will either block or fail with error
 EAGAIN if in non-blocking mode.
 
 Args:
-   buffersize: an integer, defining the maximum read buffer size; unit: size of
-               struct inotify_event (=16 bytes); a size of 16 (default value)
-               will allocate 512 bytes of buffer space.
+   buffersize: an integer, defining the maximum read buffer size in bytes;
+               default = 1024 bytes.
 
 Returns:
    A tuple of 4-tuples (pathname,name,mask,cookie):
@@ -638,11 +637,12 @@ Returns:
       application can group these events; in any other case "cookie" is zero.
 
 Raises:
+   ValueError,TypeError: buffersize is not integer-castable.
    OSError.EAGAIN: no inotify events occurred.
    OSError.EBADF: inotify file descriptor already closed.
    OSError.EINVAL: buffer size too small.
    OSError.ENOMEM: insufficient memory for buffer allocation."""
-		eventlist = inotify_c.inotify_read(self._fd,buffersize)
+		eventlist = inotify_c.inotify_read(self._fd,int(buffersize))
 		result = list()
 		for wd,mask,cookie,name in eventlist:
 			# reverse look-up watch descriptor
