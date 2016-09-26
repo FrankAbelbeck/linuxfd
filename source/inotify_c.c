@@ -126,6 +126,7 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	
 	/* loop over all events in the buffer (example again adapted from the one in man 7 inotify) */
 	/* first run: determine number of events */
+	n_events = 0;
 	for (pointer = buffer; pointer < buffer + length; pointer += sizeof(struct inotify_event) + event->len) {
 		/* cast current pointer to an inotify_event structure */
 		event = (const struct inotify_event *)pointer;
