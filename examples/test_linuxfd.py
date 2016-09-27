@@ -18,65 +18,65 @@ Written in Python V3."""
 
 import linuxfd,signal,pprint,time,tempfile,os
 
-##
-## test eventfd
-##
-#efd = linuxfd.eventfd(initval=0,nonBlocking=True)
-#print("\ntesting eventfd (fd={})".format(efd.fileno()))
-#for i in range(0,3):
-	#print("   writing to sempahore")
-	#efd.write()
-#try:
-	#while True:
-		#value = efd.read()
-		#print("   read '{}' from semaphore".format(value))
-#except BlockingIOError:
-	#print("   semaphore exhausted")
+#
+# test eventfd
+#
+efd = linuxfd.eventfd(initval=0,nonBlocking=True)
+print("\ntesting eventfd (fd={})".format(efd.fileno()))
+for i in range(0,3):
+	print("   writing to sempahore")
+	efd.write()
+try:
+	while True:
+		value = efd.read()
+		print("   read '{}' from semaphore".format(value))
+except BlockingIOError:
+	print("   semaphore exhausted")
 
-#print("\ntesting eventfd (fd={}, mode: counting)".format(efd.fileno()))
-#efd = linuxfd.eventfd(initval=0,semaphore=True,nonBlocking=True)
-#for i in range(0,3):
-	#print("   writing to sempahore")
-	#efd.write()
-#try:
-	#while True:
-		#value = efd.read()
-		#print("   read '{}' from semaphore".format(value))
-#except BlockingIOError:
-	#print("   semaphore exhausted")
+print("\ntesting eventfd (fd={}, mode: counting)".format(efd.fileno()))
+efd = linuxfd.eventfd(initval=0,semaphore=True,nonBlocking=True)
+for i in range(0,3):
+	print("   writing to sempahore")
+	efd.write()
+try:
+	while True:
+		value = efd.read()
+		print("   read '{}' from semaphore".format(value))
+except BlockingIOError:
+	print("   semaphore exhausted")
 
-##
-## test signalfd
-##
-#sfd = linuxfd.signalfd(signalset={signal.SIGALRM})
-#signal.pthread_sigmask(signal.SIG_SETMASK,{signal.SIGALRM})
-#print("\ntesting signalfd (fd={}) with SIGALRM".format(sfd.fileno()))
-#print("guarded signals = {}".format(sfd.signals()))
-#print("starting alarm timer (3 seconds)")
-#signal.alarm(3)
-#value = sfd.read()
-#print("received SIGALRM, signalfd.read() returned:")
-#pprint.pprint(value)
-#signal.alarm(0)
+#
+# test signalfd
+#
+sfd = linuxfd.signalfd(signalset={signal.SIGALRM})
+signal.pthread_sigmask(signal.SIG_SETMASK,{signal.SIGALRM})
+print("\ntesting signalfd (fd={}) with SIGALRM".format(sfd.fileno()))
+print("guarded signals = {}".format(sfd.signals()))
+print("starting alarm timer (3 seconds)")
+signal.alarm(3)
+value = sfd.read()
+print("received SIGALRM, signalfd.read() returned:")
+pprint.pprint(value)
+signal.alarm(0)
 
-##
-## test timerfd
-##
-#tfd = linuxfd.timerfd(rtc=True)
-#print("\ntesting timerfd (fd={})".format(sfd.fileno()))
-#print("   {:.2f}: setting timer (value=3,interval=1)".format(time.time()))
-#tfd.settime(3,1)
-#for i in range(0,3):
-	#value = tfd.read()
-	#print("   {:.2f}: received timer event".format(time.time()))
-	#time.sleep(0.25)
-	#print("   {:.2f}: timer will expire in {:.3f} seconds".format(time.time(),tfd.gettime()[0]))
-#t = time.time()+5
-#print("   {:.2f}: setting absolute timer (t={:.2f})".format(time.time(),t))
-#tfd.settime(t,absolute=True)
-#value = tfd.read()
-#print("   {:.2f}: received timer event".format(time.time()))
-#tfd.settime(0,0)
+#
+# test timerfd
+#
+tfd = linuxfd.timerfd(rtc=True)
+print("\ntesting timerfd (fd={})".format(sfd.fileno()))
+print("   {:.2f}: setting timer (value=3,interval=1)".format(time.time()))
+tfd.settime(3,1)
+for i in range(0,3):
+	value = tfd.read()
+	print("   {:.2f}: received timer event".format(time.time()))
+	time.sleep(0.25)
+	print("   {:.2f}: timer will expire in {:.3f} seconds".format(time.time(),tfd.gettime()[0]))
+t = time.time()+5
+print("   {:.2f}: setting absolute timer (t={:.2f})".format(time.time(),t))
+tfd.settime(t,absolute=True)
+value = tfd.read()
+print("   {:.2f}: received timer event".format(time.time()))
+tfd.settime(0,0)
 
 #
 # test inotify
