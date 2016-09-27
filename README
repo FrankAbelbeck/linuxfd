@@ -36,5 +36,3 @@ Changelog
 2016-09-27: revised code base; new inotify event string translation method,
             buffer allocation via posix_memalign, fix of inotify_event->name
             handling, compiler now uses -Wall
-
-'revised code base; new inotify event string translation method, buffer allocation via posix_memalign, fix of inotify_event->name handling, compiler now uses -Wall'
