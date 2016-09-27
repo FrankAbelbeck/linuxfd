@@ -18,13 +18,14 @@ Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 #include <Python.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>  /* definition of errno */
 #include <sys/signalfd.h>
 
 
 /* Python: signalfd(fd,signalset,flags) -> fd
    C:      int signalfd(int fd, const sigset_t *mask, int flags); */
 static PyObject * _signalfd(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	int flags;
 	int result;
@@ -47,7 +48,7 @@ static PyObject * _signalfd(PyObject *self, PyObject *args) {
 		if (result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	}
 	
-	/* call signalfd; catch errors by raising an exception */
+	/* call signalfd(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = signalfd(fd, &mask, flags);
 	Py_END_ALLOW_THREADS
@@ -61,7 +62,7 @@ static PyObject * _signalfd(PyObject *self, PyObject *args) {
 /* Python: signalfd_read(fd) -> value
    C:      int signalfd_read(int fd, eventfd_t *value); */
 static PyObject * _signalfd_read(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	struct signalfd_siginfo value;
 	int result;

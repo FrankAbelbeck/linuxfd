@@ -44,7 +44,7 @@ IN_ALL_EVENTS = inotify_c.IN_ALL_EVENTS
 IN_MOVE = inotify_c.IN_MOVE
 IN_CLOSE = inotify_c.IN_CLOSE
 # additional inotify event mask constants for inotify.add()
-IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW
+IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW
 IN_EXCL_UNLINK = inotify_c.IN_EXCL_UNLINK
 IN_ONESHOT = inotify_c.IN_ONESHOT
 IN_ONLYDIR = inotify_c.IN_ONLYDIR
@@ -522,6 +522,7 @@ Raises:
 		self._isNonBlocking = bool(nonBlocking)
 		self._isCloseOnExec = bool(closeOnExec)
 		self._wd = dict() # mapping pathnames to watch descriptors
+		self._name = dict() # mapping watch descriptors to pathnames
 		flags = 0
 		if self._isNonBlocking: flags |= inotify_c.IN_NONBLOCK
 		if self._isCloseOnExec: flags |= inotify_c.IN_CLOEXEC
@@ -604,7 +605,9 @@ Raises:
 			mask = mask & ~inotify_c.IN_MASK_ADD # make sure MASK_ADD is not set
 		else:
 			mask = mask | inotify_c.IN_MASK_ADD # make sure MASK_ADD is set
-		self._wd[pathname] = inotify_c.inotify_add_watch(self._fd,pathname,mask)
+		wd = inotify_c.inotify_add_watch(self._fd,pathname,mask)
+		self._wd[pathname] = wd
+		self._name[wd] = pathname
 	
 	
 	def remove(self,pathname):
@@ -612,8 +615,10 @@ Raises:
 Raises:
    OSError.EBADF: inotify file descriptor already closed.
 """
-		inotify_c.inotify_rm_watch(self._wd[pathname])
+		wd = self._wd[pathname]
+		inotify_c.inotify_rm_watch(wd)
 		del self._wd[pathname]
+		del self._name[wd]
 	
 	
 	def read(self,buffersize=1024):
@@ -645,9 +650,7 @@ Raises:
 		eventlist = inotify_c.inotify_read(self._fd,int(buffersize))
 		result = list()
 		for wd,mask,cookie,name in eventlist:
-			# reverse look-up watch descriptor
-			pathname = [key for key,value in self._wd.items() if value == wd][0]
-			result.append((pathname,name,mask,cookie))
+			result.append((self._name[wd],name,mask,cookie))
 		return tuple(result)
 	
 	
@@ -673,5 +676,36 @@ Returns:
 Returns:
    A boolean."""
 		return self._isCloseOnExec
+	
+	
+	def eventStrings(self,mask):
+		"""Return a tuple of event flags identifier strings set in given mask.
 
+Args:
+   mask: an integer, a bitmask describing file alternation events.
+
+Returns:
+   A tuple of strings."""
+		retval = list()
+		if mask & inotify_c.IN_ACCESS: retval.append("IN_ACCESS")
+		if mask & inotify_c.IN_ATTRIB: retval.append("IN_ATTRIB")
+		if mask & inotify_c.IN_CLOSE_WRITE: retval.append("IN_CLOSE_WRITE")
+		if mask & inotify_c.IN_CLOSE_NOWRITE: retval.append("IN_CLOSE_NOWRITE")
+		if mask & inotify_c.IN_CREATE: retval.append("IN_CREATE")
+		if mask & inotify_c.IN_DELETE: retval.append("IN_DELETE")
+		if mask & inotify_c.IN_DELETE_SELF: retval.append("IN_DELETE_SELF")
+		if mask & inotify_c.IN_MODIFY: retval.append("IN_MODIFY")
+		if mask & inotify_c.IN_MOVE_SELF: retval.append("IN_MOVE_SELF")
+		if mask & inotify_c.IN_MOVED_FROM: retval.append("IN_MOVED_FROM")
+		if mask & inotify_c.IN_MOVED_TO: retval.append("IN_MOVED_TO")
+		if mask & inotify_c.IN_OPEN: retval.append("IN_OPEN")
+		if mask & inotify_c.IN_DONT_FOLLOW: retval.append("IN_DONT_FOLLOW")
+		if mask & inotify_c.IN_EXCL_UNLINK: retval.append("IN_EXCL_UNLINK")
+		if mask & inotify_c.IN_ONESHOT: retval.append("IN_ONESHOT")
+		if mask & inotify_c.IN_ONLYDIR: retval.append("IN_ONLYDIR")
+		if mask & inotify_c.IN_IGNORED: retval.append("IN_IGNORED")
+		if mask & inotify_c.IN_ISDIR: retval.append("IN_ISDIR")
+		if mask & inotify_c.IN_Q_OVERFLOW: retval.append("IN_Q_OVERFLOW")
+		if mask & inotify_c.IN_UNMOUNT: retval.append("IN_UNMOUNT")
+		return tuple(retval)
 

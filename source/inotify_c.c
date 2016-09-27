@@ -17,21 +17,23 @@ Copyright (C) 2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
 #include <Python.h>
 #include <unistd.h>
-#include <limits.h> /* provides NAME_MAX */
-#include <stdlib.h> /* provides malloc and free */
+#include <stdlib.h> /* provides posix_memalign and free */
+#include <errno.h>  /* definition of errno */
 #include <sys/inotify.h>
-
+#include <string.h>
+#include <stdio.h>
 
 /* Python: inotify_init(flags) -> fd
    C:      int inotify_init1(int flags); */
 static PyObject * _inotify_init(PyObject *self, PyObject *args) {
-	/* variable definitions */
-	int fd,flags;
+	/* variable declarations */
+	int fd;
+	int flags;
 	
 	/* parse argument: integer -> flags */
 	if (!PyArg_ParseTuple(args, "i", &flags)) return NULL;
 	
-	/* call inotify_init1; catch errors by raising an exception */
+	/* call inotify_init1(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	fd = inotify_init1(flags);
 	Py_END_ALLOW_THREADS
@@ -45,15 +47,16 @@ static PyObject * _inotify_init(PyObject *self, PyObject *args) {
 /* Python: inotify_add_watch(fd,pathname,mask) -> wd
    C:      int inotify_add_watch(int fd, const char *pathname, uint32_t mask); */
 static PyObject * _inotify_add_watch(PyObject *self, PyObject *args) {
-	/* variable definitions */
-	int fd,wd;
+	/* variable declarations */
+	int fd;
+	int wd;
 	char *pathname;
 	uint32_t mask;
 	
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "isI", &fd, &pathname, &mask)) return NULL;
 	
-	/* call inotify_add_watch; catch errors by raising an exception */
+	/* call inotify_add_watch(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	wd = inotify_add_watch(fd, pathname, mask);
 	Py_END_ALLOW_THREADS
@@ -67,13 +70,15 @@ static PyObject * _inotify_add_watch(PyObject *self, PyObject *args) {
 /* Python: inotify_rm_watch(fd,wd)
    C:      int inotify_rm_watch(int fd, int wd); */
 static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
-	/* variable definitions */
-	int fd,wd,result;
+	/* variable declarations */
+	int fd;
+	int wd;
+	int result;
 	
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "ii", &fd, &wd)) return NULL;
 	
-	/* call inotify_rm_watch; catch errors by raising an exception */
+	/* call inotify_rm_watch(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = inotify_rm_watch(fd, wd);
 	Py_END_ALLOW_THREADS
@@ -88,31 +93,38 @@ static PyObject * _inotify_rm_watch(PyObject *self, PyObject *args) {
 /* Python: inotify_read(fd,size) -> value
    C:      ssize_t read(int fd, void *buf, size_t count); */
 static PyObject * _inotify_read(PyObject *self, PyObject *args) {
-	/* variable definitions */
-	int fd,size,length,n_events;
+	/* variable declarations */
+	int fd;
+	int size;
+	int result;
+	int length;
+	int n_events;
 	char *pointer;
-	const struct inotify_event *event;
 	char *buffer;
-	PyObject *result;
+	struct inotify_event *event;
+	PyObject *data;
 	
-	/* parse the function's argument: int fd */
+	/* parse the function's argument: int fd, int size */
 	if (!PyArg_ParseTuple(args, "ii", &fd, &size)) return NULL;
 	
-	/* prepare buffer by allocating enough memory */
+	/* prepare buffer by allocating enough memory
+	   (deal with too small or negative values) */
+	if (size < sizeof(struct inotify_event)) size = sizeof(struct inotify_event);
 	/* taken from the example in man 7 inotify:
-	   "Some systems cannot read integer variables if they are not properly
-	    aligned. On other systems, incorrect alignment may decrease performance.
-	    Hence, the buffer used for reading from the inotify file descriptor
-	    should have the same alignment as struct inotify_event. */
-	/* char buffer[size] __attribute__ ((aligned(__alignof__(struct inotify_event)))); */
-	/* since this won't work in C, aligned_alloc() has to be used */
-	buffer = (char *)aligned_alloc(__alignof__(struct inotify_event),size);
-	if (buffer == NULL) {
-		/* read failed, raise OSError with either EINVAL (alignment not a power of two) or ENOMEM (insufficient memory) */
+	      "Some systems cannot read integer variables if they are not properly
+	      aligned. On other systems, incorrect alignment may decrease
+	      performance. Hence, the buffer used for reading from the inotify file
+	      descriptor should have the same alignment as struct inotify_event."
+	   Thus use posix_memalign() instead of malloc() */
+	result = posix_memalign((void **)&buffer,sizeof(struct inotify_event),size);
+	if (result != 0) {
+		/* allocation failed, raise OSError with errno set to returned value
+		   (since posix_memalign() won't set it */
+		errno = result;
 		return PyErr_SetFromErrno(PyExc_OSError);
 	}
 	
-	/* call read; catch OSErrors */
+	/* call read(); catch OSErrors */
 	Py_BEGIN_ALLOW_THREADS
 	length = read(fd, buffer, size);
 	Py_END_ALLOW_THREADS
@@ -124,28 +136,34 @@ static PyObject * _inotify_read(PyObject *self, PyObject *args) {
 	}
 	
 	/* loop over all events in the buffer (example again adapted from the one in man 7 inotify) */
-	/* first run: determine number of events */
+	/* first run: determine number of events in order to declare a properly sized PyList */
 	n_events = 0;
 	for (pointer = buffer; pointer < buffer + length; pointer += sizeof(struct inotify_event) + event->len) {
-		/* cast current pointer to an inotify_event structure */
-		event = (const struct inotify_event *)pointer;
+		/* cast current pointer to an inotify_event structure and increase number of events */
+		event = (struct inotify_event *)pointer;
 		n_events++;
 	}
-	/* second run: correctly size result list and populate it with the events via PyList_SetItem */
-	result = PyList_New(n_events);
+	data = PyList_New(n_events);
+	/* second run: populate PyList with the events via PyList_SetItem */
 	n_events = 0;
 	for (pointer = buffer; pointer < buffer + length; pointer += sizeof(struct inotify_event) + event->len) {
 		/* cast current pointer to an inotify_event structure */
-		event = (const struct inotify_event *)pointer;
+		event = (struct inotify_event *)pointer;
+		/* set a new list item */
 		PyList_SetItem(
-			result,
+			data,
 			n_events,
-			Py_BuildValue("(i,i,i,s)",event->wd,event->mask,event->cookie,event->name)
+			Py_BuildValue("(i,i,i,s)",
+				event->wd,
+				event->mask,
+				event->cookie,
+				event->len > 0 ? event->name : "" /* nasty, I know... */
+			)
 		);
-		n_events++;
+		n_events++; /* keep track of item position */
 	}
 	free(buffer); /* thou shalt always free allocated memory! */
-	return result;
+	return data;
 }
 
 

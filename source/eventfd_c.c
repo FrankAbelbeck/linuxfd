@@ -22,7 +22,7 @@ Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 /* Python: eventfd(initval,flags) -> fd
    C:      int eventfd(unsigned int initval, int flags); */
 static PyObject * _eventfd(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	unsigned int initval;
 	int flags;
 	int result;
@@ -30,7 +30,7 @@ static PyObject * _eventfd(PyObject *self, PyObject *args) {
 	/* parse the function's arguments: unsigned int initval, int flags */
 	if (!PyArg_ParseTuple(args, "Ii", &initval, &flags)) return NULL;
 	
-	/* call eventfd; catch errors by raising an exception */
+	/* call eventfd(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = eventfd(initval, flags);
 	Py_END_ALLOW_THREADS
@@ -44,7 +44,7 @@ static PyObject * _eventfd(PyObject *self, PyObject *args) {
 /* Python: eventfd_read(fd) -> value
    C:      int eventfd_read(int fd, eventfd_t *value); */
 static PyObject * _eventfd_read(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	eventfd_t value;
 	int result;
@@ -52,7 +52,7 @@ static PyObject * _eventfd_read(PyObject *self, PyObject *args) {
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
-	/* call eventfd_read; catch errors by raising an exception */
+	/* call eventfd_read(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = eventfd_read(fd, &value);
 	Py_END_ALLOW_THREADS
@@ -66,7 +66,7 @@ static PyObject * _eventfd_read(PyObject *self, PyObject *args) {
 /* Python: eventfd_write(fd,value) -> None
    C:      int eventfd_write(int fd, eventfd_t value); */
 static PyObject * _eventfd_write(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	eventfd_t value;
 	int result;
@@ -75,7 +75,7 @@ static PyObject * _eventfd_write(PyObject *self, PyObject *args) {
 	/* uint64_t in Python API? --> unsigned long long = K */
 	if (!PyArg_ParseTuple(args, "iK", &fd, &value)) return NULL;
 	
-	/* call eventfd_write; catch errors by raising an exception */
+	/* call eventfd_write(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = eventfd_write(fd,value);
 	Py_END_ALLOW_THREADS

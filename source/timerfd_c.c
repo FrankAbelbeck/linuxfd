@@ -19,13 +19,14 @@ Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 #include <unistd.h>
 #include <time.h>
 #include <stdint.h> /* definition of uint64_t */
+#include <errno.h>  /* definition of errno */
 #include <sys/timerfd.h>
 
 
 /* Python: timerfd_create(clockid,flags) -> fd
    C:      int timerfd_create(int clockid, int flags); */
 static PyObject * _timerfd_create(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int clockid;
 	int flags;
 	int result;
@@ -33,7 +34,7 @@ static PyObject * _timerfd_create(PyObject *self, PyObject *args) {
 	/* parse the function's arguments: int clockid, int flags */
 	if (!PyArg_ParseTuple(args, "ii", &clockid, &flags)) return NULL;
 	
-	/* call timerfd_create; catch errors by raising an exception */
+	/* call timerfd_create(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_create(clockid, flags);
 	Py_END_ALLOW_THREADS
@@ -48,7 +49,7 @@ static PyObject * _timerfd_create(PyObject *self, PyObject *args) {
                                const struct itimerspec *new_value,
                                struct itimerspec *old_value); */
 static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	int flags;
 	int result;
@@ -68,7 +69,7 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 	new_value.it_interval.tv_sec  = (time_t)interval;
 	new_value.it_interval.tv_nsec = (long int)( 1e9 * (interval - (int)interval) );
 	
-	/* call timerfd_settime; catch errors by raising an exception */
+	/* call timerfd_settime(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_settime(fd, flags, &new_value, &old_value);
 	Py_END_ALLOW_THREADS
@@ -87,7 +88,7 @@ static PyObject * _timerfd_settime(PyObject *self, PyObject *args) {
 /* Python: timerfd_gettime(fd) -> value,interval
    C:      int timerfd_gettime(int fd, struct itimerspec *curr_value); */
 static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	int result;
 	double value;
@@ -98,18 +99,18 @@ static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
-	/* call timerfd_gettime; catch errors by raising an exception */
+	/* call timerfd_gettime(); catch errors by raising an exception */
 	Py_BEGIN_ALLOW_THREADS
 	result = timerfd_gettime(fd, &curr_value);
 	Py_END_ALLOW_THREADS
 	if(result == -1) return PyErr_SetFromErrno(PyExc_OSError);
 	
-	/* convert returned struct old_value */
+	/* convert returned struct curr_value */
 	value    = (double)curr_value.it_value.tv_sec    + (double)curr_value.it_value.tv_nsec / 1e9;
 	interval = (double)curr_value.it_interval.tv_sec + (double)curr_value.it_interval.tv_nsec / 1e9;
 	resulttuple = Py_BuildValue("(dd)", value, interval);
 	
-	/* everything's fine, return tuple (value,interval) created from old_value */
+	/* everything's fine, return tuple (value,interval) created from curr_value */
 	return resulttuple;
 };
 
@@ -117,7 +118,7 @@ static PyObject * _timerfd_gettime(PyObject *self, PyObject *args) {
 /* Python: timerfd_read(fd) -> value
    C:      ssize_t read(int fd, void *buf, size_t count); */
 static PyObject * _timerfd_read(PyObject *self, PyObject *args) {
-	/* variable definitions */
+	/* variable declarations */
 	int fd;
 	uint64_t buffer;
 	ssize_t result;
@@ -125,7 +126,7 @@ static PyObject * _timerfd_read(PyObject *self, PyObject *args) {
 	/* parse the function's arguments: int fd */
 	if (!PyArg_ParseTuple(args, "i", &fd)) return NULL;
 	
-	/* call read; catch OSErrors */
+	/* call read(); catch OSErrors */
 	Py_BEGIN_ALLOW_THREADS
 	result = read(fd, &buffer, sizeof(uint64_t));
 	Py_END_ALLOW_THREADS

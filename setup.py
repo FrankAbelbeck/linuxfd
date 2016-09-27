@@ -17,17 +17,19 @@ Copyright (C) 2014-2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
 from distutils.core import setup, Extension
 
-eventfd_c  = Extension("eventfd_c",  sources = ["source/eventfd_c.c"])
-signalfd_c = Extension("signalfd_c", sources = ["source/signalfd_c.c"])
-timerfd_c  = Extension("timerfd_c",  sources = ["source/timerfd_c.c"])
-inotify_c  = Extension("inotify_c",  sources = ["source/inotify_c.c"])
+gccargs = ["-Wall"]#,"-Wextra"]
+
+eventfd_c  = Extension("eventfd_c",  sources=["source/eventfd_c.c"],  extra_compile_args=gccargs)
+signalfd_c = Extension("signalfd_c", sources=["source/signalfd_c.c"], extra_compile_args=gccargs)
+timerfd_c  = Extension("timerfd_c",  sources=["source/timerfd_c.c"],  extra_compile_args=gccargs)
+inotify_c  = Extension("inotify_c",  sources=["source/inotify_c.c"],  extra_compile_args=gccargs)
 
 longdescription = """linuxfd provides a Python interface for the Linux system calls 'eventfd',
 'signalfd', 'timerfd' and 'inotify'."""
 
 setup(
 	name = "linuxfd",
-	version = "1.4.3",
+	version = "1.4.4",
 	description = "Python bindings for the Linux eventfd/signalfd/timerfd/inotify syscalls",
 	long_description = longdescription,
 	author = "Frank Abelbeck",
