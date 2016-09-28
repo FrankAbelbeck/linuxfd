@@ -616,7 +616,7 @@ Raises:
    OSError.EBADF: inotify file descriptor already closed.
 """
 		wd = self._wd[pathname]
-		inotify_c.inotify_rm_watch(wd)
+		inotify_c.inotify_rm_watch(self._fd,wd)
 		del self._wd[pathname]
 		del self._name[wd]
 	
