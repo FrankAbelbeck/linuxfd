@@ -112,8 +112,11 @@ Raises:
 	
 	def close(self):
 		"""Close the file descriptor."""
-		try:    os.close(self._fd)
+		try:    
+			if self._fd: os.close(self._fd)
 		except: pass
+		self._fd = None
+
 	
 	
 	def fileno(self):
@@ -242,8 +245,10 @@ Raises:
 	
 	def close(self):
 		"""Close the file descriptor."""
-		try:    os.close(self._fd)
+		try:    
+			if self._fd: os.close(self._fd)
 		except: pass
+		self._fd = None
 	
 	
 	def fileno(self):
@@ -397,8 +402,10 @@ Raises:
 	
 	def close(self):
 		"""Close the file descriptor."""
-		try:    os.close(self._fd)
+		try:    
+			if self._fd: os.close(self._fd)
 		except: pass
+		self._fd = None
 	
 	
 	def fileno(self):
@@ -536,8 +543,11 @@ Raises:
 	
 	def close(self):
 		"""Close the file descriptor."""
-		try:    os.close(self._fd)
+		try:    
+			if self._fd: os.close(self._fd)
 		except: pass
+		self._fd = None
+
 	
 	
 	def fileno(self):
