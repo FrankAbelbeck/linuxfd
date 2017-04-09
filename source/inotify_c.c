@@ -22,6 +22,7 @@ Copyright (C) 2016 Frank Abelbeck <frank.abelbeck@googlemail.com>
 #include <sys/inotify.h>
 #include <string.h>
 #include <stdio.h>
+#include <linux/version.h>
 
 /* Python: inotify_init(flags) -> fd
    C:      int inotify_init1(int flags); */
@@ -213,7 +214,9 @@ void initinotify_c(void) {
 		PyModule_AddIntConstant( m, "IN_CLOSE",         IN_CLOSE ); /* IN_CLOSE_WRITE | IN_CLOSE_NOWRITE */
 		/* define inotify constants: flags for inotify_add_watch */
 		PyModule_AddIntConstant( m, "IN_DONT_FOLLOW",   IN_DONT_FOLLOW );
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 36)
 		PyModule_AddIntConstant( m, "IN_EXCL_UNLINK",   IN_EXCL_UNLINK );
+#endif
 		PyModule_AddIntConstant( m, "IN_MASK_ADD",      IN_MASK_ADD );
 		PyModule_AddIntConstant( m, "IN_ONESHOT",       IN_ONESHOT );
 		PyModule_AddIntConstant( m, "IN_ONLYDIR",       IN_ONLYDIR );

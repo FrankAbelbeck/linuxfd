@@ -16,6 +16,8 @@ along with linuxfd.  If not, see <http://www.gnu.org/licenses/>.
 
 Written in Python V3."""
 
+import linuxfd._kernel_version as kernel_version
+
 # import helper modules for the syscalls and constants
 import linuxfd.eventfd_c
 import linuxfd.signalfd_c
@@ -45,7 +47,10 @@ IN_MOVE = inotify_c.IN_MOVE
 IN_CLOSE = inotify_c.IN_CLOSE
 # additional inotify event mask constants for inotify.add()
 IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW
-IN_EXCL_UNLINK = inotify_c.IN_EXCL_UNLINK
+
+if kernel_version.get() >= kernel_version.make(2, 6, 36):
+	IN_EXCL_UNLINK = inotify_c.IN_EXCL_UNLINK
+
 IN_ONESHOT = inotify_c.IN_ONESHOT
 IN_ONLYDIR = inotify_c.IN_ONLYDIR
 # additional inotify event mask constants for inotify.read()
