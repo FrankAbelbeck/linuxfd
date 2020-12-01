@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 r"""This file is part of linuxfd (Python wrapper for eventfd/signalfd/timerfd)
-Copyright (C) 2014-2017 Frank Abelbeck <frank.abelbeck@googlemail.com>
+Copyright (C) 2014-2020 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
     linuxfd is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -29,7 +29,7 @@ longdescription = """linuxfd provides a Python interface for the Linux system ca
 
 setup(
 	name = "linuxfd",
-	version = "1.4.4",
+	version = "1.5",
 	description = "Python bindings for the Linux eventfd/signalfd/timerfd/inotify syscalls",
 	long_description = longdescription,
 	author = "Frank Abelbeck",

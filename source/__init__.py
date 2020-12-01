@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """linuxfd: Python interface for the Linux system calls eventfd/signalfd/timerfd
-Copyright (C) 2014-2017 Frank Abelbeck <frank.abelbeck@googlemail.com>
+Copyright (C) 2014-2020 Frank Abelbeck <frank.abelbeck@googlemail.com>
 
 linuxfd is free software: you can redistribute it and/or modify it under the
 terms of the GNU Lesser General Public License as published by the
@@ -28,31 +28,31 @@ import errno,os
 
 # define constants
 # inotify event mask constants (inotify.add(), inotify.read())
-IN_ACCESS = inotify_c.IN_ACCESS
-IN_ATTRIB = inotify_c.IN_ATTRIB
-IN_CLOSE_WRITE = inotify_c.IN_CLOSE_WRITE
+IN_ACCESS        =  inotify_c.IN_ACCESS
+IN_ATTRIB        = inotify_c.IN_ATTRIB
+IN_CLOSE_WRITE   = inotify_c.IN_CLOSE_WRITE
 IN_CLOSE_NOWRITE = inotify_c.IN_CLOSE_NOWRITE
-IN_CREATE = inotify_c.IN_CREATE
-IN_DELETE = inotify_c.IN_DELETE
-IN_DELETE_SELF = inotify_c.IN_DELETE_SELF
-IN_MODIFY = inotify_c.IN_MODIFY
-IN_MOVE_SELF = inotify_c.IN_MOVE_SELF
-IN_MOVED_FROM = inotify_c.IN_MOVED_FROM
-IN_MOVED_TO = inotify_c.IN_MOVED_TO
-IN_OPEN = inotify_c.IN_OPEN
-IN_ALL_EVENTS = inotify_c.IN_ALL_EVENTS
-IN_MOVE = inotify_c.IN_MOVE
-IN_CLOSE = inotify_c.IN_CLOSE
+IN_CREATE        = inotify_c.IN_CREATE
+IN_DELETE        = inotify_c.IN_DELETE
+IN_DELETE_SELF   = inotify_c.IN_DELETE_SELF
+IN_MODIFY        = inotify_c.IN_MODIFY
+IN_MOVE_SELF     = inotify_c.IN_MOVE_SELF
+IN_MOVED_FROM    = inotify_c.IN_MOVED_FROM
+IN_MOVED_TO      = inotify_c.IN_MOVED_TO
+IN_OPEN          = inotify_c.IN_OPEN
+IN_ALL_EVENTS    = inotify_c.IN_ALL_EVENTS
+IN_MOVE          = inotify_c.IN_MOVE
+IN_CLOSE         = inotify_c.IN_CLOSE
 # additional inotify event mask constants for inotify.add()
-IN_DONT_FOLLOW = inotify_c.IN_DONT_FOLLOW
-IN_EXCL_UNLINK = inotify_c.IN_EXCL_UNLINK
-IN_ONESHOT = inotify_c.IN_ONESHOT
-IN_ONLYDIR = inotify_c.IN_ONLYDIR
+IN_DONT_FOLLOW   = inotify_c.IN_DONT_FOLLOW
+IN_EXCL_UNLINK   = inotify_c.IN_EXCL_UNLINK
+IN_ONESHOT       = inotify_c.IN_ONESHOT
+IN_ONLYDIR       = inotify_c.IN_ONLYDIR
 # additional inotify event mask constants for inotify.read()
-IN_IGNORED = inotify_c.IN_IGNORED
-IN_ISDIR = inotify_c.IN_ISDIR
-IN_Q_OVERFLOW = inotify_c.IN_Q_OVERFLOW
-IN_UNMOUNT = inotify_c.IN_UNMOUNT
+IN_IGNORED       = inotify_c.IN_IGNORED
+IN_ISDIR         = inotify_c.IN_ISDIR
+IN_Q_OVERFLOW    = inotify_c.IN_Q_OVERFLOW
+IN_UNMOUNT       = inotify_c.IN_UNMOUNT
 
 
 class eventfd:
@@ -116,7 +116,6 @@ Raises:
 			if self._fd: os.close(self._fd)
 		except: pass
 		self._fd = None
-
 	
 	
 	def fileno(self):

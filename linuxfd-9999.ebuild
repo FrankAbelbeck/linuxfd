@@ -14,8 +14,8 @@
 #    You should have received a copy of the GNU Lesser General Public License
 #    along with linuxfd.  If not, see <http://www.gnu.org/licenses/>.
 
-EAPI=6
-PYTHON_COMPAT=( python{3_3,3_4} )
+EAPI=7
+PYTHON_COMPAT=( python3_{3,4,5,6,7} )
 
 inherit distutils-r1 linux-info git-r3
 
@@ -23,14 +23,9 @@ DESCRIPTION="Python bindings for the Linux eventfd/signalfd/timerfd/inotify sysc
 HOMEPAGE="https://www.github.com/abelbeck/linuxfd/ https://pypi.python.org/pypi/linuxfd/"
 EGIT_REPO_URI="git://github.com/FrankAbelbeck/linuxfd.git"
 
-LICENSE="LGPL"
+LICENSE="LGPL-3"
 SLOT="0"
-KEYWORDS="~amd64"
-IUSE=""
-
-DEPEND=""
-RDEPEND=""
-
+KEYWORDS="amd64"
 DOCS=( COPYING README )
 
 CONFIG_CHECK="EVENTFD SIGNALFD TIMERFD INOTIFY_USER"
