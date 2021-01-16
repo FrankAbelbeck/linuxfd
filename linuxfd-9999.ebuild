@@ -15,7 +15,7 @@
 #    along with linuxfd.  If not, see <http://www.gnu.org/licenses/>.
 
 EAPI=7
-PYTHON_COMPAT=( python3_{3,4,5,6,7} )
+PYTHON_COMPAT=( python3_{3..9} )
 
 inherit distutils-r1 linux-info git-r3
 
@@ -26,7 +26,7 @@ EGIT_REPO_URI="git://github.com/FrankAbelbeck/linuxfd.git"
 LICENSE="LGPL-3"
 SLOT="0"
 KEYWORDS="amd64"
-DOCS=( COPYING README )
+DOCS=( COPYING README.md )
 
 CONFIG_CHECK="EVENTFD SIGNALFD TIMERFD INOTIFY_USER"
 ERROR_EVENTFD="${PN} requires support for timerfd system calls (CONFIG_EVENTFD), being enabled in 'General setup -> Configure standard kernel features (expert users)'."
